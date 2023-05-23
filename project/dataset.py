@@ -202,7 +202,7 @@ def save_patch_idx(path, patch_size=256, stride=8, test=None, patch_class_balanc
                         patch_idx.append([s_row, e_row, start, end])
                         
                     else:   # for patch_class_balance take patch image indices based on class percentage
-                        if percen["one_class"]>9.0: # take 19% as the threshold for class percentage
+                        if percen["one_class"]>15.0: # take 19% as the threshold for class percentage
                             patch_idx.append([s_row, e_row, start, end])
     return  patch_idx
 
