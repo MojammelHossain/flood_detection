@@ -12,7 +12,6 @@ def evaluate(dataloader, model, val=False):
     miou = MeanIoU()
     tot_loss = 0
     mean_iou = 0
-    b = 10
     with torch.no_grad():
         for i, (feature, mask) in enumerate(dataloader):
             label = torch.permute(mask, (0,3,1,2)).to('cuda')
@@ -21,8 +20,7 @@ def evaluate(dataloader, model, val=False):
                 batch_loss = loss(out, label)
             tot_loss += batch_loss.item()
             mean_iou += miou(out, label).item()
-            if i==b:
-                break
+
     tot_loss = tot_loss / len(dataloader)
     mean_iou = mean_iou / len(dataloader)
     if val:
@@ -53,7 +51,6 @@ def train(dataloader, val_dataloader, model, config):
     for epoch in t:
         tot_loss = 0
         mean_iou = 0
-        b = 10
         for i, (feature, mask) in enumerate(dataloader):
             label = torch.permute(mask, (0,3,1,2)).to('cuda')
             with torch.autocast(device_type='cuda', dtype=torch.float16, enabled=USE_AMP):
@@ -68,8 +65,6 @@ def train(dataloader, val_dataloader, model, config):
             # print("LEARNING RATE {}".format(lr_scheduler.get_lr()))
             mean_iou += miou(out, label).item()
             tot_loss += batch_loss.item()
-            if b==i:
-                break
         if epoch % config['val_plot_epoch'] == 0:
             show_predictions(val_dataloader, model, config, True)
         val_loss, val_iou = evaluate(val_dataloader, model, True)
