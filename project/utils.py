@@ -1,8 +1,102 @@
+import os
 import yaml
+import torch
 import pathlib
+import pandas as pd
+from metric import MeanIoU
 from datetime import datetime
+import matplotlib.pyplot as plt
 
 
+def write_csv(config, metric):
+    if os.path.exists((config["csv_log_dir"]+config["csv_log_name"])):
+        df = pd.read_csv((config["csv_log_dir"]+config["csv_log_name"]))
+        df2 = pd.DataFrame.from_dict([metric])
+        df = pd.concat([df, df2])
+    else:
+        df = pd.DataFrame.from_dict([metric])
+
+    df.to_csv((config["csv_log_dir"]+config["csv_log_name"]), index=False)
+
+
+
+def create_mask(pred, mask):
+    mask = torch.argmax(mask[0], axis=2).cpu().numpy()
+    pred = torch.argmax(torch.permute(pred[0], (1,2,0)), axis=2).detach().cpu().numpy()
+    return pred, mask
+
+# Sub-ploting and save
+# ----------------------------------------------------------------------------------------------
+def display(display_list, idx, directory, score, exp):
+    """
+    Summary:
+        save all images into single figure
+    Arguments:
+        display_list (dict): a python dictionary key is the title of the figure
+        idx (int) : image index in dataset object
+        directory (str) : path to save the plot figure
+        score (float) : accuracy of the predicted mask
+        exp (str): experiment name
+    Return:
+        save images figure into directory
+    """
+    plt.figure(figsize=(12, 8))
+    title = list(display_list.keys())
+
+    for i in range(len(display_list)):
+        plt.subplot(1, len(display_list), i+1)
+        plt.title(title[i])
+        plt.imshow((display_list[title[i]]), vmin=0, vmax=1)
+        plt.axis('off')
+
+    prediction_name = "img_ex_{}_{}_MeanIOU_{:.4f}.png".format(exp, idx, score) # create file name to save
+    plt.savefig(os.path.join(directory, prediction_name), bbox_inches='tight')
+    plt.clf()
+    plt.cla()
+    plt.close()
+
+
+
+# Save all plot figures
+# ----------------------------------------------------------------------------------------------
+def show_predictions(dataset, model, config, val=False):
+    """
+    Summary: 
+        save image/images with their mask, pred_mask and accuracy
+    Arguments:
+        dataset (object): MyDataset class object
+        model (object): keras.Model class object
+        config (dict): configuration dictionary
+        val (bool): for validation plot save
+    Output:
+        save predicted image/images
+    """
+
+    if val:
+        directory = config['prediction_val_dir']
+    else:
+        directory = config['prediction_test_dir']
+
+    # save single image after prediction from dataset
+    if config['plot_single']:
+        feature, mask, idx = dataset.dataset.get_random_data(config['index'])
+        data = [(feature, mask)]
+    else:
+        data = dataset
+        idx = 0
+
+    for feature, mask in data: # save all image prediction in the dataset
+        prediction = model(torch.permute(feature, (0,3,1,2)).to("cuda"))
+
+        for i in range(len(feature)): # save single image prediction in the batch
+            m = MeanIoU()
+            score = m(prediction, torch.permute(mask, (0,3,1,2)).to("cuda")).item()
+            prediction, mask = create_mask(prediction, mask)
+            display({"Feature": feature[i].numpy(),
+                      "Mask": mask,
+                      "Prediction (MeanIOU_{:.4f})".format(score): prediction
+                      }, idx, directory, score, config['experiment'])
+            idx += 1
 
 
 # Model Output Path

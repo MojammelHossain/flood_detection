@@ -67,7 +67,7 @@ def read_img(directory, label=False, patch_idx=None, height=512, width=512):
         img = np.array(Image.open(directory))
 
         if patch_idx:   # if patch is true then returning the extracted patch from image else returning the whole image
-            return img[patch_idx[0]:patch_idx[1], patch_idx[2]:patch_idx[3],:]/255 # extract patch from original image
+            return (img[patch_idx[0]:patch_idx[1], patch_idx[2]:patch_idx[3],:])/255 # extract patch from original image
         else:
             return img/255
 
@@ -202,7 +202,7 @@ def save_patch_idx(path, patch_size=256, stride=8, test=None, patch_class_balanc
                         patch_idx.append([s_row, e_row, start, end])
                         
                     else:   # for patch_class_balance take patch image indices based on class percentage
-                        if percen["one_class"]>15.0: # take 19% as the threshold for class percentage
+                        if percen["one_class"]>19.0: # take 19% as the threshold for class percentage
                             patch_idx.append([s_row, e_row, start, end])
     return  patch_idx
 
@@ -449,7 +449,7 @@ class MyDataset(Dataset):
             else:   # for transform_fn is false, get mask
                 tgts.append(read_img(self.tgt_dir[idx], label=True))
 
-        return torch.from_numpy(imgs), torch.from_numpy(tgts), idx
+        return torch.Tensor(np.array(imgs)), torch.Tensor(np.array(tgts)), idx
 
 
 def collate_fn(batch):
@@ -539,11 +539,11 @@ def get_train_val_dataloader(config):
                             patchify = config['patchify'],
                             batch_size = config['batch_size'], transform_fn=to_categorical, 
                             num_class=config['num_classes'],patch_idx=valid_idx)
-    train_dataloader = DataLoader(val_dataset, sampler=BatchSampler(
+    val_dataloader = DataLoader(val_dataset, sampler=BatchSampler(
                                     SequentialSampler(val_dataset), 
                                     batch_size=n_batch_size, drop_last=False), collate_fn=collate_fn)
     
-    return train_dataloader
+    return train_dataloader, val_dataloader
 
 
 def get_test_dataloader(config):
@@ -584,8 +584,11 @@ def get_test_dataloader(config):
     print("test Example : {}".format(len(test_features)))   # print number of test dataset
 
     # create dataloader object for test dataset
-    test_dataset = MyDataset(test_features, test_masks, patchify=config['patchify'],
-                            batch_size=config['batch_size'], transform_fn=collate_fn, 
+    test_dataset = MyDataset(test_features, test_masks,
+                            patchify = config['patchify'],
+                            batch_size = config['batch_size'], transform_fn=to_categorical, 
                             num_class=config['num_classes'],patch_idx=test_idx)
-    
-    return test_dataset
+    test_dataloader = DataLoader(test_dataset, sampler=BatchSampler(
+                                    SequentialSampler(test_dataset), 
+                                    batch_size=config['batch_size'], drop_last=False), collate_fn=collate_fn)
+    return test_dataloader

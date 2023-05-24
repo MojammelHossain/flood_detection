@@ -1,9 +1,5 @@
 import torch
-from model import UNET
-from dataset import get_train_val_dataloader
-from utils import get_config_yaml
 import torch
-from segmentation_models_pytorch.metrics import iou_score
 
 
 class MeanIoU:
@@ -26,14 +22,3 @@ class MeanIoU:
                 - inter
             )
         return torch.mean((inter + self.epsilon) / (union + self.epsilon))
-
-if __name__ == '__main__':
-    config = get_config_yaml("D:/MsCourse/AI/project/flood_detection/project/config.yaml", {})
-    dataloader = get_train_val_dataloader(config)
-    model = UNET([3,16,32,64,128], [256,128,64,32,16], 2).to("cuda")
-    checkpoint = torch.load("D:/MsCourse/AI/project/flood_detection/model/unet/unet_ex_patchify_epochs_2000_23-May-23.pt")
-    for i, batch in enumerate(dataloader):
-        out = out = model(torch.permute(batch[0], (0,3,1,2)).to('cuda'))
-        break
-    m = MeanIoU()
-    print(m(out, torch.permute(batch[1], (0,3,1,2)).to('cuda')).item())
