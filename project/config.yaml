@@ -54,7 +54,7 @@ patience : 300 # required for early_stopping, if accuracy does not change for 50
 
 # Evaluation
 # ----------------------------------------------------------------------------------------------
-load_model_name : None
+load_model_name : unet_ex_patchify_epochs_2000_23-May-23.pt
 load_model_dir : None
 
 # Prediction Plot
