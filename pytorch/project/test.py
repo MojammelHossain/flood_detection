@@ -12,7 +12,7 @@ def evaluate(dataloader, model, val=False):
     miou = MeanIoU()
     tot_loss = 0
     mean_iou = 0
-    b = 10
+    b = 100
     with torch.no_grad():
         for i, (feature, mask) in enumerate(dataloader):
             label = torch.permute(mask, (0,3,1,2)).to('cuda')
@@ -20,6 +20,7 @@ def evaluate(dataloader, model, val=False):
                 out = model(torch.permute(feature, (0,3,1,2)).to('cuda'))
                 batch_loss = loss(out, label)
             tot_loss += batch_loss.item()
+            print("Batch : ", batch_loss.item())
             mean_iou += miou(out, label).item()
             if b==i:
                 break
@@ -40,6 +41,6 @@ if __name__ == '__main__':
     print((config['load_model_dir']+config['load_model_name']))
     checkpoint = torch.load((config['load_model_dir']+config['load_model_name']))
     model.load_state_dict(checkpoint["model"])
-    loss, iou = evaluate(dataloader, model, True)
     show_predictions(dataloader, model, config)
+    loss, iou = evaluate(dataloader, model, True)
     print("TEST LOSS {:.4f}, TEST MEANIOU {:.4f}".format(loss, iou))

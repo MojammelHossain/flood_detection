@@ -68,7 +68,7 @@ class UNET(nn.Module):
 
         self.midblock = LayerBlock(self.enc_channels[-1], self.dec_channels[0])
 
-        self.outConv = nn.Conv2d(self.dec_channels[-1], self.num_classes, kernel_size=1)
+        self.outConv = nn.Conv2d(dec_channels[-1], self.num_classes, kernel_size=1)
         self.outsoft = nn.Softmax(dim=1)
     
     def forward(self, x):
@@ -80,6 +80,6 @@ class UNET(nn.Module):
         return self.outsoft(self.outConv(decOut))
 
 if __name__ == '__main__':
-    model = UNET([3,16,32,64,128], [256,128,64,32,16], 3)
+    model = UNET([2,16,32,64,128], [256,128,64,32,16], 2)
     model = model.to(device="cuda", memory_format=torch.channels_last)
     

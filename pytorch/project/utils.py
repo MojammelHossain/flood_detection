@@ -90,11 +90,13 @@ def show_predictions(dataset, model, config, val=False):
 
         for i in range(len(feature)): # save single image prediction in the batch
             m = MeanIoU()
-            score = m(prediction, torch.permute(mask, (0,3,1,2)).to("cuda")).item()
-            prediction, mask = create_mask(prediction, mask)
+            pred = prediction[i].unsqueeze(0)
+            msk = mask[i].unsqueeze(0)
+            score = m(pred, torch.permute(msk, (0,3,1,2)).to("cuda")).item()
+            pred, msk = create_mask(pred, msk)
             display({"Feature": feature[i].numpy(),
-                      "Mask": mask,
-                      "Prediction (MeanIOU_{:.4f})".format(score): prediction
+                      "Mask": msk,
+                      "Prediction (MeanIOU_{:.4f})".format(score): pred
                       }, idx, directory, score, config['experiment'])
             idx += 1
 
