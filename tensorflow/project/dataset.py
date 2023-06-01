@@ -561,3 +561,27 @@ def get_test_dataloader(config):
                             num_class=config['num_classes'],patch_idx=test_idx)
     
     return test_dataset
+
+if __name__ == '__main__':
+    train_dir = pd.read_csv("D:/MsCourse/AI/project/flood_detection/pytorch/data/json/train_patch_512.json")
+    train_features = train_dir.feature_ids.values
+    train_masks = train_dir.masks.values
+
+
+
+    train_dataset = MyDataset(train_features, train_masks,
+                              in_channels=3, patchify=False,
+                              batch_size=2, transform_fn=transform_data,
+                              num_class=2, augment=None,
+                              weights=None, patch_idx=train_dir['patch_idx'])
+
+
+    #x, y = train_dataset.__getitem__(1)
+    for batch in train_dataset:
+        x, y = batch
+        break
+    print(type(x))
+    print(tf.shape(x))
+    print(type(y))
+    print(tf.shape(y))
+    print(train_dataset.__len__())

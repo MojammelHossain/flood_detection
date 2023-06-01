@@ -105,7 +105,6 @@ if __name__ == '__main__':
       print("USING MIXED PRECISION")
     config = get_config_yaml("config.yaml", {})
     create_paths(config)
-    config['batch_size'] = 32
     dataloader, val_dataloader = get_train_val_dataloader(config)
     model = UNET([3,16,32,64,128], [256,128,64,32,16], 2)
     model = model.to(device="cuda", memory_format=torch.channels_last)

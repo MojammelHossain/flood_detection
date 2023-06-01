@@ -1,3 +1,4 @@
+import segmentation_models as sm
 from tensorflow.keras.models import Model
 from tensorflow.keras.layers import  Conv2D, Input, MaxPooling2D, concatenate, Conv2DTranspose, Dropout
 
@@ -75,6 +76,51 @@ def unet(config):
     return model
 
 
+def linknet(config):
+    """
+        Summary:
+            Create LINKNET from segmentation models library model object
+        Arguments: 
+            Model configuration from config.yaml
+        Return:
+            Keras.model object
+    """
+
+    model = sm.Linknet(backbone_name='efficientnetb0', input_shape=(config['height'], config['width'], config['in_channels']),
+                    classes = config['num_classes'], activation='softmax',
+                    encoder_weights=None, weights=None)
+    x = model.layers[-2].output # fetch the last layer previous layer output
+    
+    output = Conv2D(config['num_classes'], kernel_size = (1,1), name="out", activation = 'softmax',dtype="float32")(x) # create new last layer
+    model = Model(inputs = model.input, outputs=output)
+    return model
+
+# Transfer Learning
+# ----------------------------------------------------------------------------------------------
+
+def get_model_transfer_lr(model, num_classes):
+    """
+    Summary:
+        create new model object for transfer learning
+    Arguments:
+        model (object): keras.Model class object
+        num_classes (int): number of class
+    Return:
+        model (object): keras.Model class object
+    """
+
+
+    x = model.layers[-2].output # fetch the last layer previous layer output
+    
+    output = Conv2D(num_classes, kernel_size = (1,1), name="out", activation = 'softmax')(x) # create new last layer
+    model = Model(inputs = model.input, outputs=output) 
+    
+    # freeze all model layer except last layer
+    for layer in model.layers[:-1]:
+        layer.trainable = False
+    
+    return model
+
 # Get model
 # ----------------------------------------------------------------------------------------------
 
@@ -89,6 +135,7 @@ def get_model(config):
     """
 
 
-    models = {'unet': unet
+    models = {'unet': unet,
+              'linknet': linknet
               }
     return models[config['model_name']](config)

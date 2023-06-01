@@ -592,3 +592,12 @@ def get_test_dataloader(config):
                                     SequentialSampler(test_dataset), 
                                     batch_size=config['batch_size'], drop_last=False), collate_fn=collate_fn)
     return test_dataloader
+
+if __name__ == '__main__':
+    train_dir = get_config_yaml("D:/MsCourse/AI/project/flood_detection/pytorch/project/config.yaml", {})
+    dataloader, _ = get_train_val_dataloader(train_dir)
+    for i, batch in enumerate(dataloader):
+        print(batch[0].shape)
+        print(batch[1].shape)
+        break
+ 

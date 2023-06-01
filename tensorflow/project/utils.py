@@ -276,6 +276,9 @@ def get_config_yaml(path, args):
     config['prediction_test_dir'] = config['root_dir']+'/prediction/'+config['model_name']+'/test/'
     config['prediction_val_dir'] = config['root_dir']+'/prediction/'+config['model_name']+'/validation/'
 
+    # Create visualization directory
+    config['visualization_dir'] = config['root_dir']+'/visualization/'
+
     return config
 
 def find_best_worst():

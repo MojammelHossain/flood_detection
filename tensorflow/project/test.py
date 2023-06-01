@@ -5,7 +5,7 @@ from dataset import get_test_dataloader
 from loss import *
 from tensorflow import keras
 from tensorflow.keras.models import load_model
-from utils import show_predictions, get_config_yaml, create_paths, patch_show_predictions
+from utils import show_predictions, get_config_yaml, create_paths
 
 # Parsing variable
 # ----------------------------------------------------------------------------------------------
@@ -29,6 +29,7 @@ else:
 # ----------------------------------------------------------------------------------------------
 config = get_config_yaml('config.yaml', {})
 create_paths(config, True)
+config['plot_single'] = args.plot_single
 
 # Multiple GPU Setup
 #----------------------------------------------------------------------------------------------
@@ -47,12 +48,7 @@ model = load_model(os.path.join(config['load_model_dir'], config['load_model_nam
 
 # Prediction Plot
 # ----------------------------------------------------------------------------------------------
-print("Saving test predictions...")
-if config['patchify']:
-    print("call patch_show_predictions")
-    patch_show_predictions(test_dataset, model, config)
-else:
-    show_predictions(test_dataset, model, config)
+show_predictions(test_dataset, model, config)
                      
 # Evaluation Score
 # ----------------------------------------------------------------------------------------------
