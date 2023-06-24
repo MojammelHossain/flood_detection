@@ -49,4 +49,4 @@ Following are the model results after five epochs on test dataset.
 | `linknet`      | 0.4266         |
 
 Some prediction on test dataset.
-![Alternate text](/other/pred.png)
+![Alternate text](/other/pred.jpg)
