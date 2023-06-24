@@ -135,6 +135,7 @@ ENV/
 .data/
 Datasets/
 mnist/
+visualization/
 legacy/checkpoints/
 
 # pl tests
@@ -142,8 +143,6 @@ ml-runs/
 mlruns/
 *.zip
 *.ckpt
-*.jpg
-*.png
 *.tif
 .ipynb_checkpoints/
 pytorch\ lightning
